@@ -195,7 +195,12 @@ impl Bencher {
             for _ in 0..self.iterations {
                 let start = Instant::now();
                 func();
-                durations.push(start.elapsed());
+                let duration = start.elapsed();
+                if duration > self.bench_duration {
+                    durations.push(duration - self.bench_duration);
+                } else {
+                    durations.push(duration);
+                }
             }
         }
         println!("Result: {}", durations);
