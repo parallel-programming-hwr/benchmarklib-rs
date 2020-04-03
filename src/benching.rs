@@ -202,7 +202,7 @@ impl Bencher {
 
     /// Prints the settings of the Bencher
     pub fn print_settings(&mut self) -> &mut Self {
-        println!("{}{}Benchmarking Settings{}", color::Fg(color::Green), style::Framed, style::Reset);
+        println!("\n{}{}Benchmarking Settings{}", color::Fg(color::Green), style::Underline, style::Reset);
         println!("Number of iterations:\t {}", if self.iterations > 0 {self.iterations.to_string() } else { "auto".to_string() });
         if self.iterations == 0 {
             println!("Maximum number of iterations: {}", self.max_auto_iterations)
