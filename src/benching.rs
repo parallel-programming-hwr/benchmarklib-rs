@@ -127,7 +127,7 @@ pub struct Bencher {
     iterations: usize,
 }
 
-const MAX_AUTO_ITERATIONS: usize = 1000000;
+const MAX_AUTO_ITERATIONS: usize = 10000;
 
 impl Bencher {
     pub fn new() -> Self {
