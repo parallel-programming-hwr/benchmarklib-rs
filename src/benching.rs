@@ -126,15 +126,27 @@ pub struct Bencher {
     measurements: Vec<BenchVec>,
     iterations: usize,
     max_auto_iterations: usize,
+    bench_duration: Duration,
 }
 
 impl Bencher {
     pub fn new() -> Self {
         Self {
+            bench_duration: Self::calculate_bench_duration(),
             measurements: Vec::new(),
             iterations: 100,
             max_auto_iterations: 10000,
         }
+    }
+
+    fn calculate_bench_duration() -> Duration{
+        let mut durations = BenchVec::new();
+        for _ in 0..1000 {
+            let start = Instant::now();
+            durations.push(start.elapsed());
+        }
+
+        durations.average()
     }
 
     /// Sets the number of iterations a benchmark will be run
@@ -167,7 +179,12 @@ impl Bencher {
             while count < self.max_auto_iterations {
                 let start = Instant::now();
                 func();
-                durations.push(start.elapsed());
+                let duration = start.elapsed();
+                if duration > self.bench_duration {
+                    durations.push(duration - self.bench_duration);
+                } else {
+                    durations.push(duration);
+                }
                 if (durations.standard_deviation() / durations.average().as_nanos() as f64) < 0.01 && count > 1{
                     break;
                 }
@@ -203,6 +220,7 @@ impl Bencher {
     /// Prints the settings of the Bencher
     pub fn print_settings(&mut self) -> &mut Self {
         println!("\n{}{}Benchmarking Settings{}", color::Fg(color::Green), style::Underline, style::Reset);
+        println!("Benchmarking accuracy delay:\t {:?}", self.bench_duration);
         println!("Number of iterations:\t {}", if self.iterations > 0 {self.iterations.to_string() } else { "auto".to_string() });
         if self.iterations == 0 {
             println!("Maximum number of iterations: {}", self.max_auto_iterations)
