@@ -5,7 +5,7 @@ mod tests {
     use super::benching::Bencher;
 
     #[test]
-    fn bencher_works() {
+    fn it_works() {
         let mut bencher = Bencher::new();
         let mut executed = false;
         bencher.bench("lol", || executed = true);
@@ -13,7 +13,7 @@ mod tests {
     }
 
     #[test]
-    fn bench_iterations() {
+    fn it_benches_specifically() {
         let mut bencher = Bencher::new();
         let mut count = 0;
         bencher.set_iterations(243);
@@ -22,7 +22,7 @@ mod tests {
     }
 
     #[test]
-    fn bench_auto() {
+    fn it_benches_automatically() {
         let mut bencher = Bencher::new();
         let mut count = 0;
         bencher.set_iterations(0).set_max_iterations(1000);
@@ -31,10 +31,18 @@ mod tests {
     }
 
     #[test]
-    fn bench_difference() {
+    fn it_reports_differences() {
         let mut bencher = Bencher::new();
         bencher.bench("lol", || 3*4);
         bencher.bench("lol2", || 35*4);
         bencher.compare();
+    }
+
+    #[test]
+    fn it_prints_settings() {
+        let mut bencher = Bencher::new();
+        bencher.print_settings();
+        bencher.set_iterations(0);
+        bencher.print_settings();
     }
 }
