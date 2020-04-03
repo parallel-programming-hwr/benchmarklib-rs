@@ -125,15 +125,15 @@ impl Display for DurationDifference {
 pub struct Bencher {
     measurements: Vec<BenchVec>,
     iterations: usize,
+    max_auto_iterations: usize,
 }
-
-const MAX_AUTO_ITERATIONS: usize = 10000;
 
 impl Bencher {
     pub fn new() -> Self {
         Self {
             measurements: Vec::new(),
             iterations: 100,
+            max_auto_iterations: 10000,
         }
     }
 
@@ -141,6 +141,12 @@ impl Bencher {
     /// If set to 0 it iterates until the standard deviation is below 1%
     pub fn set_iterations(&mut self, iterations: usize) -> &mut Self {
         self.iterations = iterations;
+
+        self
+    }
+
+    pub fn set_max_iterations(&mut self, iterations: usize) -> &mut Self {
+        self.max_auto_iterations = iterations;
 
         self
     }
@@ -158,7 +164,7 @@ impl Bencher {
         );
         if self.iterations == 0 {
             let mut count = 0;
-            while count < MAX_AUTO_ITERATIONS {
+            while count < self.max_auto_iterations {
                 let start = Instant::now();
                 func();
                 durations.push(start.elapsed());
@@ -167,6 +173,7 @@ impl Bencher {
                 }
                 count += 1;
             }
+            println!("{}After {} iterations{}", style::Faint, count, style::Reset);
         } else {
             for _ in 0..self.iterations {
                 let start = Instant::now();

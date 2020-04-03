@@ -25,7 +25,7 @@ mod tests {
     fn bench_auto() {
         let mut bencher = Bencher::new();
         let mut count = 0;
-        bencher.set_iterations(0);
+        bencher.set_iterations(0).set_max_iterations(1000);
         bencher.bench("lol", || count += 1);
         assert!(count > 1);
     }
