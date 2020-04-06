@@ -1,9 +1,11 @@
-use std::time::{Duration, Instant};
 use std::fmt::{self, Display};
+use std::fs::File;
+use std::io;
+use std::io::{BufWriter, Write};
+use std::time::{Duration, Instant};
+
 use rayon::prelude::*;
 use termion::{color, style};
-use std::io::{BufWriter, Write};
-use std::fs::File;
 
 #[derive(Debug, Clone)]
 pub struct BenchVec {
@@ -129,7 +131,7 @@ pub struct Bencher {
     iterations: usize,
     max_auto_iterations: usize,
     bench_duration: Duration,
-    writer: Option<BufWriter<File>>
+    writer: Option<BufWriter<File>>,
 }
 
 impl Bencher {
@@ -144,7 +146,7 @@ impl Bencher {
     }
 
     /// Calculates the time it takes to measure a benchmark
-    fn calculate_bench_duration() -> Duration{
+    fn calculate_bench_duration() -> Duration {
         let mut durations = BenchVec::new();
         for _ in 0..1000 {
             let start = Instant::now();
@@ -190,7 +192,9 @@ impl Bencher {
                 } else {
                     durations.push(duration);
                 }
-                if (durations.standard_deviation() / durations.average().as_nanos() as f64) < 0.01 && count > 1{
+                if (durations.standard_deviation() / durations.average().as_nanos() as f64) < 0.01
+                    && count > 1
+                {
                     break;
                 }
                 count += 1;
@@ -210,7 +214,15 @@ impl Bencher {
         }
         println!("Result: {}", durations);
         if let Some(writer) = &mut self.writer {
-            let _ = writer.write(format!("{}\t{:?}\t{:.2}ns\n", name, durations.average(), durations.standard_deviation()).as_bytes());
+            let _ = writer.write(
+                format!(
+                    "{}\t{:?}\t{:.2}ns\n",
+                    name,
+                    durations.average(),
+                    durations.standard_deviation()
+                )
+                .as_bytes(),
+            );
         }
         self.measurements.push(durations);
 
@@ -232,9 +244,21 @@ impl Bencher {
 
     /// Prints the settings of the Bencher
     pub fn print_settings(&mut self) -> &mut Self {
-        println!("\n{}{}Benchmarking Settings{}", color::Fg(color::Green), style::Underline, style::Reset);
+        println!(
+            "\n{}{}Benchmarking Settings{}",
+            color::Fg(color::Green),
+            style::Underline,
+            style::Reset
+        );
         println!("Benchmarking accuracy delay:\t {:?}", self.bench_duration);
-        println!("Number of iterations:\t {}", if self.iterations > 0 {self.iterations.to_string() } else { "auto".to_string() });
+        println!(
+            "Number of iterations:\t {}",
+            if self.iterations > 0 {
+                self.iterations.to_string()
+            } else {
+                "auto".to_string()
+            }
+        );
         if self.iterations == 0 {
             println!("Maximum number of iterations: {}", self.max_auto_iterations)
         }
@@ -243,7 +267,17 @@ impl Bencher {
     }
 
     /// Adds a file to write the output to
-    pub fn write_output_to(&mut self, writer: BufWriter<File>) {
+    pub fn write_output_to(&mut self, writer: BufWriter<File>) -> &mut Self {
         self.writer = Some(writer);
+
+        self
+    }
+
+    pub fn flush(&mut self) -> io::Result<()> {
+        if let Some(writer) = &mut self.writer {
+            writer.flush()
+        } else {
+            Ok(())
+        }
     }
 }

@@ -3,6 +3,8 @@ pub mod benching;
 #[cfg(test)]
 mod tests {
     use super::benching::Bencher;
+    use std::fs::{read_to_string, remove_file, File};
+    use std::io::BufWriter;
 
     #[test]
     fn it_works() {
@@ -33,8 +35,8 @@ mod tests {
     #[test]
     fn it_reports_differences() {
         let mut bencher = Bencher::new();
-        bencher.bench("lol", || 3*4);
-        bencher.bench("lol2", || 35*4);
+        bencher.bench("lol", || 3 * 4);
+        bencher.bench("lol2", || 35 * 4);
         bencher.compare();
     }
 
@@ -44,5 +46,18 @@ mod tests {
         bencher.print_settings();
         bencher.set_iterations(0);
         bencher.print_settings();
+    }
+
+    #[test]
+    fn it_writes_into_files() {
+        let mut bencher = Bencher::new();
+        let file = File::create("test.tsv").unwrap();
+        bencher
+            .write_output_to(BufWriter::new(file))
+            .bench("closure", || {})
+            .flush()
+            .unwrap();
+        assert!(read_to_string("test.tsv").unwrap().len() > 0);
+        remove_file("test.tsv").unwrap();
     }
 }
