@@ -3,6 +3,7 @@ pub mod benching;
 #[cfg(test)]
 mod tests {
     use super::benching::Bencher;
+    use crate::benching::BENCH_FILE_HEAD;
     use std::fs::{read_to_string, remove_file, File};
     use std::io::BufWriter;
 
@@ -57,7 +58,9 @@ mod tests {
             .bench("closure", || {})
             .flush()
             .unwrap();
-        assert!(read_to_string("test.tsv").unwrap().len() > 0);
+        let contents = read_to_string("test.tsv").unwrap();
+        assert!(contents.contains(BENCH_FILE_HEAD));
+        assert!(contents.len() > BENCH_FILE_HEAD.len());
         remove_file("test.tsv").unwrap();
     }
 }

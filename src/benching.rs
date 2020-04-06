@@ -134,6 +134,8 @@ pub struct Bencher {
     writer: Option<BufWriter<File>>,
 }
 
+pub const BENCH_FILE_HEAD: &str = "name\tduration\tstandard_deviation\n";
+
 impl Bencher {
     pub fn new() -> Self {
         Self {
@@ -267,7 +269,8 @@ impl Bencher {
     }
 
     /// Adds a file to write the output to
-    pub fn write_output_to(&mut self, writer: BufWriter<File>) -> &mut Self {
+    pub fn write_output_to(&mut self, mut writer: BufWriter<File>) -> &mut Self {
+        writer.write(BENCH_FILE_HEAD.as_bytes()).unwrap();
         self.writer = Some(writer);
 
         self
