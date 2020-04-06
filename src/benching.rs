@@ -2,6 +2,8 @@ use std::time::{Duration, Instant};
 use std::fmt::{self, Display};
 use rayon::prelude::*;
 use termion::{color, style};
+use std::io::{BufWriter, Write};
+use std::fs::File;
 
 #[derive(Debug, Clone)]
 pub struct BenchVec {
@@ -127,6 +129,7 @@ pub struct Bencher {
     iterations: usize,
     max_auto_iterations: usize,
     bench_duration: Duration,
+    writer: Option<BufWriter<File>>
 }
 
 impl Bencher {
@@ -136,9 +139,11 @@ impl Bencher {
             measurements: Vec::new(),
             iterations: 100,
             max_auto_iterations: 10000,
+            writer: None,
         }
     }
 
+    /// Calculates the time it takes to measure a benchmark
     fn calculate_bench_duration() -> Duration{
         let mut durations = BenchVec::new();
         for _ in 0..1000 {
@@ -204,6 +209,9 @@ impl Bencher {
             }
         }
         println!("Result: {}", durations);
+        if let Some(writer) = &mut self.writer {
+            let _ = writer.write(format!("{}\t{:?}\t{:.2}ns\n", name, durations.average(), durations.standard_deviation()).as_bytes());
+        }
         self.measurements.push(durations);
 
         self
@@ -232,5 +240,10 @@ impl Bencher {
         }
 
         self
+    }
+
+    /// Adds a file to write the output to
+    pub fn write_output_to(&mut self, writer: BufWriter<File>) {
+        self.writer = Some(writer);
     }
 }
