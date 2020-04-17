@@ -1,11 +1,15 @@
+use howlong::*;
 use std::fmt::{self, Display};
 use std::fs::File;
 use std::io;
 use std::io::{BufWriter, Write};
-use std::time::{Duration, Instant};
+use std::time::Instant;
 
 use rayon::prelude::*;
 use termion::{color, style};
+
+#[derive(Debug, Clone)]
+pub struct BenchDuration {}
 
 #[derive(Debug, Clone)]
 pub struct BenchVec {
@@ -151,8 +155,8 @@ impl Bencher {
     fn calculate_bench_duration() -> Duration {
         let mut durations = BenchVec::new();
         for _ in 0..1000 {
-            let start = Instant::now();
-            durations.push(start.elapsed());
+            let start = HighResolutionClock::now();
+            durations.push(HighResolutionClock::now() - start);
         }
 
         durations.average()
